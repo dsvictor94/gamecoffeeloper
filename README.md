@@ -1,5 +1,5 @@
 you can run the watch to autorun compiler
-   coffee -wc -o lib/ src/*.coffee
+   coffee -wc -o js/ src/*.coffee
 
 without documentation yet, look the demo to understand the framework
    fast doc:
