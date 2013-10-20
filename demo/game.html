@@ -1,0 +1,102 @@
+<html>
+  <head>
+    <title>SnakeReal</title>
+    <meta content="">
+    <script src="../lib/gamecoffeeloper.js" ></script>
+    <script src="../lib/controller.cloper.js" ></script>
+    <style>
+        #canvas{
+            background-color: white;
+            border: 1px black solid;
+        }
+        
+        #load{
+            display: none;
+        }
+    </style>
+    <script type="text/coffeescript">
+       
+       getImg = (id) -> document.getElementById "img-#{id}"
+       imgs = 
+          programador: getImg "programador"
+       
+       class Click
+       
+          constructor: (@x=0, @y=0) ->
+             @clicks = new Array()
+         
+          paint: (frame) ->
+             for p in @clicks
+                frame.fillText("+", p[0], p[1])
+                
+          update: (c) ->
+             if c.mouse.click(0)
+                p = c.mouse.point()
+                @clicks.push p
+                
+       class Cursor
+       
+          constructor: (@x=0, @y=0) ->
+
+          
+          paint: (frame) ->
+             frame.fillText("#{@x}-#{@y}", @x, @y)
+
+          update: (c) ->
+             @x = c.mouse.point()[0]
+             @y = c.mouse.point()[1]
+       
+       class Programmer
+          constructor: (@x=0, @y=0) ->
+             @direction = 1
+         
+          paint: (frame) ->
+             frame.drawImage imgs.programador, @x, @y, 40, 40
+            
+          update: (c) ->
+             if c.key.key("UP") and @direction in [1,2]
+                @direction = 4
+             else if c.key.key("DOWN") and @direction in [1,2]
+                @direction = 3
+             else if c.key.key("LEFT") and @direction in [3,4]
+                @direction = 2
+             else if c.key.key("RIGHT") and @direction in [3,4]
+                @direction = 1
+
+             switch @direction
+                when 1 then @x+=c.speed
+                when 2 then @x-=c.speed
+                when 3 then @y+=c.speed
+                when 4 then @y-=c.speed
+                
+             @p = c.mouse.point()
+             
+             if c.mouse.click(0)
+                console.log "click"
+    
+       class Context extends CLOPER.Context
+       
+          constructor: () ->
+             super
+             @speed = .7
+             @objects = [new Programmer(), new Click(), new Cursor()]
+             @mouse = @required(Controller.Mouse)
+             @key = @required(Controller.Keyboard)
+       
+       canvas = document.getElementById("canvas")
+       c = new Context()
+       l = new CLOPER.Loop(c, canvas, 60)
+       l.start()
+    
+    </script>
+    <script src="coffee-script.js"></script>
+  </head>
+  <body>
+    <div id="load">
+        <img id="img-programador" src="img/programador.png">
+    </div>
+    <br>
+    <br>
+    <canvas oncontextmenu="return false;" id="canvas" height="600" width="600">Sem Suporte a Canvas, Atualize seu navegador</canvas>  
+  </body>
+</html>
