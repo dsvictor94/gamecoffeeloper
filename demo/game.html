@@ -4,6 +4,7 @@
     <meta content="">
     <script src="../js/gamecoffeeloper.js" ></script>
     <script src="../js/controller.cloper.js" ></script>
+    <script src="../js/collision.cloper.js" ></script>
     <style>
         #canvas{
             background-color: white;
@@ -45,15 +46,38 @@
           update: (c) ->
              @x = c.mouse.point()[0]
              @y = c.mouse.point()[1]
-       
+             
+             
+       class Rock
+          constructor: (c, @x=100, @y=100) ->
+             c.bb.add("rock", this)
+             @width = 40
+             @height = 40
+          
+          paint: (frame) ->
+             frame.beginPath();
+             frame.rect(@x, @y, @width, @height);
+             frame.fillStyle = 'yellow';
+             frame.fill();
+             frame.lineWidth = 7;
+             frame.strokeStyle = 'black';
+             frame.stroke();
+          update: (c) ->
+          
+          
        class Programmer
-          constructor: (@x=0, @y=0) ->
+          constructor: (c, @x=0, @y=0) ->
              @direction = 1
+             @width = 40
+             @height = 40
+             c.bb.add("p", this)
          
           paint: (frame) ->
              frame.drawImage imgs.programador, @x, @y, 40, 40
             
           update: (c) ->
+             if c.bb.collides this, "rock"
+               console.log "rock"
              if c.key.key("UP") and @direction in [1,2]
                 @direction = 4
              else if c.key.key("DOWN") and @direction in [1,2]
@@ -78,11 +102,13 @@
        
           constructor: () ->
              super
+             @bb = @required(Collision.BoundingBox)
              @speed = .7
-             @objects = [new Programmer(), new Click(), new Cursor()]
+             @objects = [new Programmer(this), new Click(), new Cursor(), new Rock(this)]
              @mouse = @required(Controller.Mouse)
              @key = @required(Controller.Keyboard)
-       
+             
+             
        canvas = document.getElementById("canvas")
        c = new Context()
        l = new CLOPER.Loop(c, canvas, 60)

@@ -1,24 +1,3 @@
-
-window.addEventListener "keydown", (e) ->
-  Instant.keys[e.keyCode] = true
-
-window.addEventListener "keyup", (e) ->
-  Instant.keys[e.keyCode] = false
-
-window.addEventListener "mousemove", (e) ->
-  Instant.mousePoint = [e.clientX, e.clientY]
-
-window.addEventListener "mousedown", (e) ->
-  Instant.mouseDown[e.button] = true;
-  
-window.addEventListener "mouseup", (e) ->
-  Instant.mouseDown[e.button] = false;
-
-class Instant
-  @keys = new Array()
-  @mousePoint = new Array(2)
-  @mouseDown = new Array(3)
-
 class Game
 
   constructor: () ->
@@ -82,4 +61,9 @@ class Context
   required: (plugin) ->
     new plugin(@game)
 
-@CLOPER = {Loop: Loop, Game: Game, Context: Context}
+@CLOPER = {
+  Loop: Loop,
+  Game: Game,
+  Context: Context,
+  VERSION: 0.7
+}
