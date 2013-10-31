@@ -1,3 +1,23 @@
+lastTime = 0
+vendors = ['webkit','moz']
+requestAninFrame = window.requestAnimationFrame
+cancelAninFrame = window.cancelAnimationFrame
+for vendor in vendors
+  if requestAninFrame?
+    console.log vendor
+    break
+  requestAninFrame = window[vendor+"RequestAnimationFrame"]
+  cancelAninFrame = window[vendor+"CancelAnimationFrame"]
+  
+if !requestAninFrame?
+  requestAninFrame = (callback, element) ->
+    currTime = new Date().getTime()
+    timeToCall = Math.max(0, 16 - (currTime-lastTime))
+    lastTime = currTime+timeToCall
+    id = window.setTimeout((() -> callback(currTime+timeToCall)), timeToCall)
+    
+  cancelAninFrame = window.clearTimeout
+
 class Game
 
   constructor: () ->
@@ -26,29 +46,49 @@ wrap = (self, f) ->
 
 class Loop
   
-  constructor: (@context, @canvas, @fps=60) ->
+  constructor: (@context, @canvas) ->
+    @ready = false
     @frame = @canvas.getContext "2d"
     @timer = "undefined"
     @context.size = [@canvas.width, @canvas.height]
     @context.game.canvas = @canvas
+    @_loopwrap = wrap(this, @loop)
+    @lastTime = 0
     
   start: ->
-    @context.load?()
+    @lastTime = new Date()
+    @context.load?(wrap(@, @loadOk)) ? @loadOk()
     @context.game.canvas = @canvas
-    @timer = setInterval(wrap(@, @loop), 1000/@fps)
+    @_loopwrap()
   
   stop: ->
     @context.destroy?()
-    clearInterval @timer
+    clearInterval(@timer)
+    
+  loadOk: ->
+    @ready = true
   
-  loop: ->
-    @context.game.update_before()
+  loop: (now) ->
+    now = now ? new Date()
+    dt = (now-@lastTime)/1000
+    @context.game.update_before(dt)
     
-    obj.update @context for obj in @context.getObjects()
-    @frame.clearRect(0,0,@canvas.width,@canvas.height);
-    obj.paint @frame for obj in @context.getObjects()
+    if @ready
+      obj.update(@context, dt) for obj in @context.getObjects()
+      @frame.clearRect(0,0,@canvas.width,@canvas.height)
+      for obj in @context.getObjects()
+        @frame.save()
+        obj.paint(@frame)
+        @frame.restore()
+    else
+      @frame.clearRect(0,0,@canvas.width,@canvas.height)
+      @frame.save()
+      @context.paintLoad(@frame, dt)
+      @frame.restore()
+    @context.game.update_after(dt)
     
-    @context.game.update_after()
+    @lastTime = now
+    @timer = requestAnimationFrame(@_loopwrap)
 
 class Context
   constructor: () ->
@@ -60,7 +100,10 @@ class Context
     
   required: (plugin) ->
     new plugin(@game)
-
+    
+  paintLoad: (frame) ->
+    frame.fillText("Game CoffeeLoper \n Loading...", @game.canvas.width/2, @game.canvas.height*0.5)
+    
 @CLOPER = {
   Loop: Loop,
   Game: Game,

@@ -51,7 +51,7 @@
       y = Instant.mousePoint[1] - this.game.canvas.getBoundingClientRect().top;
       if (x < 0 || y < 0) {
         return [null, null];
-      } else if (x > this.game.canvas.getBoundingClientRect().width || x > this.game.canvas.getBoundingClientRect().height) {
+      } else if (x > this.game.canvas.getBoundingClientRect().width || y > this.game.canvas.getBoundingClientRect().height) {
         return [null, null];
       } else {
         return [x, y];

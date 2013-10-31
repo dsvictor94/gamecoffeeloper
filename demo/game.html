@@ -5,6 +5,7 @@
     <script src="../js/gamecoffeeloper.js" ></script>
     <script src="../js/controller.cloper.js" ></script>
     <script src="../js/collision.cloper.js" ></script>
+    <script src="../js/sprite.cloper.js" ></script>
     <style>
         #canvas{
             background-color: white;
@@ -19,7 +20,7 @@
        
        getImg = (id) -> document.getElementById "img-#{id}"
        imgs = 
-          programador: getImg "programador"
+          soldier: getImg "soldier"
        
        class Click
        
@@ -33,19 +34,19 @@
           update: (c) ->
              if c.mouse.click(0)
                 p = c.mouse.point()
-                @clicks.push p
+                @clicks.push(p)
                 
        class Cursor
        
           constructor: (@x=0, @y=0) ->
-
           
           paint: (frame) ->
-             frame.fillText("#{@x}-#{@y}", @x, @y)
+             frame.fillText("#{@x}-#{@y} [#{@fps}]", @x, @y)
 
-          update: (c) ->
+          update: (c, dt) ->
              @x = c.mouse.point()[0]
              @y = c.mouse.point()[1]
+             @fps = Math.floor(1/dt)
              
              
        class Rock
@@ -62,20 +63,25 @@
              frame.lineWidth = 7;
              frame.strokeStyle = 'black';
              frame.stroke();
+
           update: (c) ->
           
           
-       class Programmer
-          constructor: (c, @x=0, @y=0) ->
+       class Soldier
+          constructor: (c, @x=0, @y=0, @speed=42) ->
              @direction = 1
-             @width = 40
-             @height = 40
+             @width = 132
+             @height = 160
              c.bb.add("p", this)
+             @sprite = new Sprite(imgs.soldier, [11,20], [132,160], @speed/21, [0,2])
          
           paint: (frame) ->
-             frame.drawImage imgs.programador, @x, @y, 40, 40
-            
-          update: (c) ->
+             frame.save() 
+             frame.translate(@x, @y)
+             @sprite.paint(frame)
+             frame.restore()
+             
+          update: (c, dt) ->
              if c.bb.collides this, "rock"
                console.log "rock"
              if c.key.key("UP") and @direction in [1,2]
@@ -88,30 +94,37 @@
                 @direction = 1
 
              switch @direction
-                when 1 then @x+=c.speed
-                when 2 then @x-=c.speed
-                when 3 then @y+=c.speed
-                when 4 then @y-=c.speed
+                when 1 then @x+=@speed*dt
+                when 2 then @x-=@speed*dt
+                when 3 then @y+=@speed*dt
+                when 4 then @y-=@speed*dt
                 
              @p = c.mouse.point()
              
              if c.mouse.click(0)
                 console.log "click"
+                
+             @sprite.update(dt)
     
        class Context extends CLOPER.Context
        
           constructor: () ->
              super
              @bb = @required(Collision.BoundingBox)
-             @speed = .7
-             @objects = [new Programmer(this), new Click(), new Cursor(), new Rock(this)]
+             @objects = [new Soldier(this), new Click(), new Cursor(), new Rock(this)]
              @mouse = @required(Controller.Mouse)
              @key = @required(Controller.Keyboard)
              
              
+          #load: (ok) ->
+          #   setTimeout(ok, 5000)
+          
+          
+             
+             
        canvas = document.getElementById("canvas")
        c = new Context()
-       l = new CLOPER.Loop(c, canvas, 60)
+       l = new CLOPER.Loop(c, canvas)
        l.start()
     
     </script>
@@ -119,10 +132,10 @@
   </head>
   <body>
     <div id="load">
-        <img id="img-programador" src="img/programador.png">
+        <img id="img-soldier" src="img/soldier.png">
     </div>
     <br>
     <br>
-    <canvas oncontextmenu="return false;" id="canvas" height="600" width="600">Sem Suporte a Canvas, Atualize seu navegador</canvas>  
+    <canvas oncontextmenu="return false;" id="canvas" height="400" width="600">Sem Suporte a Canvas, Atualize seu navegador</canvas>  
   </body>
 </html>

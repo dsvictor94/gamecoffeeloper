@@ -31,7 +31,7 @@ class Mouse
     
       if x < 0 or y < 0
         [null, null]
-      else if x > @game.canvas.getBoundingClientRect().width or x > @game.canvas.getBoundingClientRect().height
+      else if x > @game.canvas.getBoundingClientRect().width or y > @game.canvas.getBoundingClientRect().height
         [null, null]
       else
         [x, y]
